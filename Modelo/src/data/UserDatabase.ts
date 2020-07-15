@@ -12,20 +12,18 @@ export class UserDatabase {
     },
   });
 
-  private static TABLE_NAME = "User";
+  private static TABLE_NAME = "User_cookenu1";
 
   public async createUser(
     id: string,
     email: string,
-    password: string,
-    role: string
+    password: string,    
   ): Promise<void> {
     await this.connection
       .insert({
         id,
         email,
-        password,
-        role
+        password,       
       })
       .into(UserDatabase.TABLE_NAME);
   }
@@ -44,9 +42,10 @@ export class UserDatabase {
       .select("*")
       .from(UserDatabase.TABLE_NAME)
       .where({ id });
-
+    console.log(result[0])
     return result[0];
   }
+ 
 
   public async deleteUser(id: string): Promise<any> {
     await this.connection
@@ -55,3 +54,5 @@ export class UserDatabase {
       .where({ id });
   }
 }
+
+
