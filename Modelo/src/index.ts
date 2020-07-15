@@ -17,8 +17,7 @@ app.post("/signup", async (req: Request, res: Response) => {
   try {    
     const userData = {
       email: req.body.email,
-      password: req.body.password,
-      role: req.body.role,
+      password: req.body.password  
     };
 
     const idGenerator = new IdGenerator();
@@ -28,12 +27,11 @@ app.post("/signup", async (req: Request, res: Response) => {
     const hashPassword = await hashManager.hash(userData.password);
     
     const userDb = new UserDatabase();
-    await userDb.createUser(id, userData.email, hashPassword, userData.role);
+    await userDb.createUser(id, userData.email, hashPassword);
 
     const authenticator = new Authenticator();
     const token = authenticator.generateToken({
-      id,
-      role: userData.role,
+      id      
     });
 
     res.status(200).send({
@@ -73,8 +71,7 @@ app.post("/login", async (req: Request, res: Response) => {
 
     const authenticator = new Authenticator();
     const token = authenticator.generateToken({
-      id: user.id,
-      role: user.role
+      id: user.id,     
     });
 
     res.status(200).send({
@@ -93,11 +90,7 @@ app.get("/user/profile", async (req: Request, res: Response) => {
     const token = req.headers.authorization as string;
 
     const authenticator = new Authenticator();
-    const authenticationData = authenticator.getData(token);
-
-    if (authenticationData.role !== "normal") {
-      throw new Error("Only a normal user can access this funcionality");
-    }
+    const authenticationData = authenticator.getData(token);    
 
     const userDb = new UserDatabase();
     const user = await userDb.getUserById(authenticationData.id);
@@ -118,11 +111,7 @@ app.delete("/user/:id", async (req: Request, res: Response) => {
     const token = req.headers.authorization as string;
 
     const authenticator = new Authenticator();
-    const authenticationData = authenticator.getData(token);
-
-    if (authenticationData.role !== "admin") {
-      throw new Error("Only a admin user can access this funcionality");
-    }
+    const authenticationData = authenticator.getData(token);    
 
     const id = req.params.id;
 
@@ -153,8 +142,7 @@ app.get("/user/:id", async (req: Request, res: Response) => {
 
     res.status(200).send({
       id: user.id,
-      email: user.email,
-      role: user.role,
+      email: user.email      
     });
   } catch (err) {
     res.status(400).send({
@@ -164,11 +152,11 @@ app.get("/user/:id", async (req: Request, res: Response) => {
 
 });
 
-const server = app.listen(process.env.PORT || 3003, () => {
-  if (server) {
-    const address = server.address() as AddressInfo;
-    console.log(`Server is running in http://localhost:${address.port}`);
-  } else {
-    console.error(`Failure upon starting server.`);
-  }
-});
+// const server = app.listen(process.env.PORT || 3003, () => {
+//   if (server) {
+//     const address = server.address() as AddressInfo;
+//     console.log(`Server is running in http://localhost:${address.port}`);
+//   } else {
+//     console.error(`Failure upon starting server.`);
+//   }
+// });
