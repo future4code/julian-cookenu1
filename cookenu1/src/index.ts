@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { AddressInfo } from "net";
 import { IdGenerator } from "./services/IdGenerator";
 import { UserDatabase } from "./data/UserDatabase";
+import { RecipeDatabase } from "./data/RecipeDatabase";
 import { Authenticator } from "./services/Authenticator";
 import HashManager from "./services/HashManager";
 import { BaseDatabase } from "./data/BaseDatabase";
@@ -126,79 +127,27 @@ app.post("/login", async (req: Request, res: Response) => {
 //  await BaseDatabase.destroyConnection();
 //});
 
-// app.post("/receita/:id", async (req: Request, res: Response) => {
-//   try {
 
-//     if (!req.body.email || req.body.email.indexOf("@") === -1) {
-//       throw new Error("Id invalid");
-//     }
+/*********************************************************************************************/
+/*********************************************************************************************/
+// POSTAR RECEITA EM ANDAMENTO
+/*********************************************************************************************/
+/*********************************************************************************************/
 
-//     const userData = {
-//       email: req.body.email,
-//       password: req.body.password,
-//     };
-
-//     const userDatabase = new UserDatabase();
-//     const user = await userDatabase.getUserByEmail(userData.email);
-
-//     const hashManager = new HashManager();
-//     const comapreResult = await hashManager.compare(
-//       userData.password,
-//       user.password
-//     );
-
-//     if (!comapreResult) {
-//       throw new Error("Invalid password");
-//     }
-
-//     const authenticator = new Authenticator();
-//     const token = authenticator.generateToken({
-//       id: user.id
-//     });
-
-//     res.status(200).send({
-//       token,
-//     });
-//   } catch (err) {
-//     res.status(400).send({
-//       message: err.message,
-//     });
-//   }
-//   await BaseDatabase.destroyConnection();
-// });
-
-app.post("/receita/:id", async (req: Request, res: Response) => {
+app.post("/recipe", async (req: Request, res: Response) => {
   try {
 
-    if (!req.body.email || req.body.email.indexOf("@") === -1) {
-      throw new Error("Invalid email");
-    }
-
-    const userData = {
-      email: req.body.email,
-      password: req.body.password,
+    const recipeData = {
+      id_Author: req.body.id_Author,
+      title: req.body.title,
+      recipe_description: req.body.recipe_description,
+      createdAt: req.body.createdAt 
     };
 
-    const userDatabase = new UserDatabase();
-    const user = await userDatabase.getUserByEmail(userData.email);
-
-    const hashManager = new HashManager();
-    const comapreResult = await hashManager.compare(
-      userData.password,
-      user.password
-    );
-
-    if (!comapreResult) {
-      throw new Error("Invalid password");
-    }
-
-    const authenticator = new Authenticator();
-    const token = authenticator.generateToken({
-      id: user.id
-    });
+    const recipeDatabase = new RecipeDatabase();   
 
     res.status(200).send({
-      token,
+//      console.log("Receita criada com sucesso")
     });
   } catch (err) {
     res.status(400).send({
@@ -207,6 +156,8 @@ app.post("/receita/:id", async (req: Request, res: Response) => {
   }
   await BaseDatabase.destroyConnection();
 });
+
+
 /*********************************************************************************************/
 /*********************************************************************************************/
 // PEGAR USUARIO PELO TOKEN FINALIZADO
