@@ -113,12 +113,8 @@ app.post("/login", async (req: Request, res: Response) => {
 //  await BaseDatabase.destroyConnection();
 //});
 
-app.post("/receita/:id", async (req: Request, res: Response) => {
+app.post("/recipe", async (req: Request, res: Response) => {
   try {
-
-    if (!req.body.email || req.body.email.indexOf("@") === -1) {
-      throw new Error("Invalid email");
-    }
 
     const userData = {
       email: req.body.email,
