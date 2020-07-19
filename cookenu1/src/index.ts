@@ -7,6 +7,7 @@ import { RecipeDatabase } from "./data/RecipeDatabase";
 import { Authenticator } from "./services/Authenticator";
 import HashManager from "./services/HashManager";
 import { BaseDatabase } from "./data/BaseDatabase";
+import { title } from "process";
 
 
 
@@ -77,12 +78,12 @@ app.post("/login", async (req: Request, res: Response) => {
     const user = await userDatabase.getUserByEmail(userData.email);
     
     const hashManager = new HashManager();
-    const comapreResult = await hashManager.compare(
+    const compareResult = await hashManager.compare(
       userData.password,
       user.password
     );
 
-    if (!comapreResult) {
+    if (!compareResult) {
       throw new Error("Invalid password");
     }
 
@@ -104,7 +105,7 @@ app.post("/login", async (req: Request, res: Response) => {
 
 //app.delete("/user/:id", async (req: Request, res: Response) => {
 //  try {
-//    const token = req.headers.authorization as string;
+//    const token = req.headers.token as string;
 //
 //    const authenticator = new Authenticator();
 //    const authenticationData = authenticator.getData(token);
@@ -136,27 +137,30 @@ app.post("/login", async (req: Request, res: Response) => {
 
 app.post("/recipe", async (req: Request, res: Response) => {
   try {
+    const token = req.headers.token as string;
+    
+    const authenticator = new Authenticator();
+    const authenticationData = authenticator.getData(token);
+    const id_Author = authenticationData.id;
 
+    console.log(id_Author)
     const recipeData = {
-      id_Author: req.body.id_Author,
       title: req.body.title,
-      recipe_description: req.body.recipe_description,
-      createdAt: req.body.createdAt 
+      recipe_description: req.body.recipe_description
     };
 
     const recipeDatabase = new RecipeDatabase();   
+    await recipeDatabase.createRecipe(id_Author, recipeData.title, recipeData.recipe_description);
 
     res.status(200).send({
-//      console.log("Receita criada com sucesso")
+      mensagem: "Receita criada com sucesso!"
     });
   } catch (err) {
     res.status(400).send({
       message: err.message,
     });
   }
-  await BaseDatabase.destroyConnection();
 });
-
 
 /*********************************************************************************************/
 /*********************************************************************************************/
@@ -165,7 +169,7 @@ app.post("/recipe", async (req: Request, res: Response) => {
 /*********************************************************************************************/
 app.get("/user/profile", async (req: Request, res: Response) => {
   try {
-    const token = req.headers.authorization as string;
+    const token = req.headers.token as string;
 
     const authenticator = new Authenticator();
     const authenticationData = authenticator.getData(token);
@@ -197,7 +201,7 @@ app.get("/user/profile", async (req: Request, res: Response) => {
 
 app.get("/user/:id", async (req: Request, res: Response) => {
   try {
-    const token = req.headers.authorization as string;
+    const token = req.headers.token as string;
 
     const authenticator = new Authenticator();
     authenticator.getData(token);
@@ -221,7 +225,7 @@ app.get("/user/:id", async (req: Request, res: Response) => {
 
 });
 
-const server = app.listen(process.env.PORT || 3003, () => {
+const server = app.listen(process.env.PORT || 3000, () => {
   if (server) {
     const address = server.address() as AddressInfo;
     console.log(`Server is running in http://localhost:${address.port}`);

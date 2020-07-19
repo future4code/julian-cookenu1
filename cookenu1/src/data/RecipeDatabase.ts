@@ -12,20 +12,18 @@ export class RecipeDatabase {
     },
   });
 
-  private static TABLE_NAME = "Receitas_cookenu1";
+  private static TABLE_NAME = "Recipe_Cookenu1";
 
   public async createRecipe(
     id_Author: string,
     title: string,
-    recipe_description: string,
-    createdAt: moment.Moment   
+    recipe_description: string,  
   ): Promise<void> {
     await this.connection
       .insert({
         id_Author,
         title,
-        recipe_description,
-        createdAt      
+        recipe_description    
       })
       .into(RecipeDatabase.TABLE_NAME);
   }
