@@ -7,7 +7,8 @@ import { RecipeDatabase } from "./data/RecipeDatabase";
 import { Authenticator } from "./services/Authenticator";
 import HashManager from "./services/HashManager";
 import { BaseDatabase } from "./data/BaseDatabase";
-import moment from "moment"
+import moment from "moment";
+import { FollowDatabase } from "./data/FollowDatabase";
 
 
 moment.locale("pt-br")
@@ -134,6 +135,28 @@ app.post("/recipe", async (req: Request, res: Response) => {
 
     res.status(200).send({
       mensagem: "Receita criada com sucesso!"
+    });
+  } catch (err) {
+    res.status(400).send({
+      message: err.message,
+    });
+  }
+});
+
+app.post("/user/follow", async (req: Request, res: Response) => {
+  try {
+    const token = req.headers.token as string;
+    
+    const authenticator = new Authenticator();
+    const authenticationData = authenticator.getData(token);
+    const id_follower = authenticationData.id;
+    const id_followed = req.body.userToFollowId
+
+    const followDb = new FollowDatabase();   
+    await followDb.createFollow(id_followed, id_follower);   
+
+    res.status(200).send({
+      mensagem: "Followed successfully"
     });
   } catch (err) {
     res.status(400).send({
