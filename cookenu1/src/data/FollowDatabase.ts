@@ -34,10 +34,15 @@ export class FollowDatabase {
     return result[0];
   }
 
-  public async deleteFollow(id: string): Promise<any> {
-    await this.connection
+  public async deleteFollow(id_followed: string, id_follower: string): Promise<any> {
+    try{
+      await this.connection
       .delete()
       .from(FollowDatabase.TABLE_NAME)
-      .where({ id });
+      .where({ id_followed, id_follower });
+    }catch(er){
+      console.log(er)
+      console.log(id_followed, id_follower)
+    }
   }
 }

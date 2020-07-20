@@ -165,6 +165,28 @@ app.post("/user/follow", async (req: Request, res: Response) => {
   }
 });
 
+app.delete("/user/unfollow", async (req: Request, res: Response) => {
+  try {
+    const token = req.headers.token as string;
+    
+    const authenticator = new Authenticator();
+    const authenticationData = authenticator.getData(token);
+    const id_follower = authenticationData.id;
+    const id_followed = req.body.userToUnfollowId
+    
+    const followDb = new FollowDatabase();   
+    await followDb.deleteFollow(id_followed, id_follower);
+
+    res.status(200).send({
+      mensagem: "Unfollowed successfully"
+    });
+  } catch (err) {
+    res.status(400).send({
+      message: err.message,
+    });
+  }
+});
+
 app.get("/user/profile", async (req: Request, res: Response) => {
   try {
     const token = req.headers.token as string;
