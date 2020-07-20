@@ -155,6 +155,13 @@ app.post("/user/follow", async (req: Request, res: Response) => {
     const id_follower = authenticationData.id;
     const id_followed = req.body.userToFollowId
 
+    const followId = new FollowDatabase();
+    const idDb = await followId.isValidId(id_followed);
+
+    if (idDb.quantity === 0) {
+      throw new Error("Insira um id válido");
+    }
+    
     const followDb = new FollowDatabase();   
     await followDb.createFollow(id_followed, id_follower);   
 
