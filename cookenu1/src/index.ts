@@ -7,20 +7,14 @@ import { RecipeDatabase } from "./data/RecipeDatabase";
 import { Authenticator } from "./services/Authenticator";
 import HashManager from "./services/HashManager";
 import { BaseDatabase } from "./data/BaseDatabase";
+import moment from "moment";
+import { FollowDatabase } from "./data/FollowDatabase";
 
 
-
+moment.locale("pt-br")
 dotenv.config();
-
 const app = express();
-
 app.use(express.json());
-
-/*********************************************************************************************/
-/*********************************************************************************************/
-// CRIAR NOVO USUARIO FINALIZADO
-/*********************************************************************************************/
-/*********************************************************************************************/
 
 app.post("/signup", async (req: Request, res: Response) => {
   try {    
@@ -55,12 +49,6 @@ app.post("/signup", async (req: Request, res: Response) => {
   }
 });
 
-/*********************************************************************************************/
-/*********************************************************************************************/
-// LOGIN FINALIZADO
-/*********************************************************************************************/
-/*********************************************************************************************/
-
 app.post("/login", async (req: Request, res: Response) => {
   try {
    
@@ -77,12 +65,12 @@ app.post("/login", async (req: Request, res: Response) => {
     const user = await userDatabase.getUserByEmail(userData.email);
     
     const hashManager = new HashManager();
-    const comapreResult = await hashManager.compare(
+    const compareResult = await hashManager.compare(
       userData.password,
       user.password
     );
 
-    if (!comapreResult) {
+    if (!compareResult) {
       throw new Error("Invalid password");
     }
 
@@ -104,7 +92,7 @@ app.post("/login", async (req: Request, res: Response) => {
 
 //app.delete("/user/:id", async (req: Request, res: Response) => {
 //  try {
-//    const token = req.headers.authorization as string;
+//    const token = req.headers.token as string;
 //
 //    const authenticator = new Authenticator();
 //    const authenticationData = authenticator.getData(token);
@@ -127,45 +115,88 @@ app.post("/login", async (req: Request, res: Response) => {
 //  await BaseDatabase.destroyConnection();
 //});
 
-
-/*********************************************************************************************/
-/*********************************************************************************************/
-// POSTAR RECEITA EM ANDAMENTO
-/*********************************************************************************************/
-/*********************************************************************************************/
-
 app.post("/recipe", async (req: Request, res: Response) => {
   try {
+    const token = req.headers.token as string;
+    
+    const authenticator = new Authenticator();
+    const authenticationData = authenticator.getData(token);
+    const id_Author = authenticationData.id;
+    const createdAt = Date.now()  
 
+    console.log(createdAt)
     const recipeData = {
-      id_Author: req.body.id_Author,
       title: req.body.title,
-      recipe_description: req.body.recipe_description,
-      createdAt: req.body.createdAt 
+      recipe_description: req.body.recipe_description
     };
 
     const recipeDatabase = new RecipeDatabase();   
+    await recipeDatabase.createRecipe(id_Author, recipeData.title, recipeData.recipe_description, createdAt);
 
     res.status(200).send({
-//      console.log("Receita criada com sucesso")
+      mensagem: "Receita criada com sucesso!"
     });
   } catch (err) {
     res.status(400).send({
       message: err.message,
     });
   }
-  await BaseDatabase.destroyConnection();
 });
 
+app.post("/user/follow", async (req: Request, res: Response) => {
+  try {
+    if (!req.body.userToFollowId || req.body.userToFollowId === " ") {
+      throw new Error("Insira um id");
+    }
+    const token = req.headers.token as string;
+    
+    const authenticator = new Authenticator();
+    const authenticationData = authenticator.getData(token);
+    const id_follower = authenticationData.id;
+    const id_followed = req.body.userToFollowId
 
-/*********************************************************************************************/
-/*********************************************************************************************/
-// PEGAR USUARIO PELO TOKEN FINALIZADO
-/*********************************************************************************************/
-/*********************************************************************************************/
+    const followDb = new FollowDatabase();   
+    await followDb.createFollow(id_followed, id_follower);   
+
+    res.status(200).send({
+      mensagem: "Followed successfully"
+    });
+  } catch (err) {
+    res.status(400).send({
+      message: err.message,
+    });
+  }
+});
+
+app.post("/user/unfollow", async (req: Request, res: Response) => {
+  try {
+    if (!req.body.userToUnfollowId || req.body.userToUnfollowId === " ") {
+      throw new Error("Insira um id");
+    }
+    
+    const token = req.headers.token as string;
+    
+    const authenticator = new Authenticator();
+    const authenticationData = authenticator.getData(token);
+    const id_follower = authenticationData.id;
+    const id_followed = req.body.userToUnfollowId
+
+    const followDb = new FollowDatabase();   
+    await followDb.deleteFollow(id_followed, id_follower);
+
+    res.status(200).send({
+      mensagem: "Unfollowed successfully"
+    });
+  } catch (err) {
+    res.status(400).send({
+      message: err.message,
+    });
+  }
+});
+
 app.get("/user/profile", async (req: Request, res: Response) => {
   try {
-    const token = req.headers.authorization as string;
+    const token = req.headers.token as string;
 
     const authenticator = new Authenticator();
     const authenticationData = authenticator.getData(token);
@@ -189,15 +220,9 @@ app.get("/user/profile", async (req: Request, res: Response) => {
   }
 });
 
-/*********************************************************************************************/
-/*********************************************************************************************/
-// PEGAR USUARIO PELO ID FINALIZADO
-/*********************************************************************************************/
-/*********************************************************************************************/
-
 app.get("/user/:id", async (req: Request, res: Response) => {
   try {
-    const token = req.headers.authorization as string;
+    const token = req.headers.token as string;
 
     const authenticator = new Authenticator();
     authenticator.getData(token);
@@ -221,7 +246,7 @@ app.get("/user/:id", async (req: Request, res: Response) => {
 
 });
 
-const server = app.listen(process.env.PORT || 3003, () => {
+const server = app.listen(process.env.PORT || 3000, () => {
   if (server) {
     const address = server.address() as AddressInfo;
     console.log(`Server is running in http://localhost:${address.port}`);
@@ -229,3 +254,32 @@ const server = app.listen(process.env.PORT || 3003, () => {
     console.error(`Failure upon starting server.`);
   }
 });
+
+app.get("/recipe/:id", async (req: Request, res: Response) => {
+  try {
+    const token = req.headers.token as string;
+
+    const authenticator = new Authenticator();
+    authenticator.getData(token);
+		
+    const id = Number(req.params.id);
+
+    const recipeDatabase = new RecipeDatabase();
+    const recipe = await recipeDatabase.getRecipeById(id);
+
+    const dataFormatada = moment(recipe.createdAt).format("DD/MM/YYYY HH:mm")
+    
+    res.status(200).send({
+      id: recipe.id_Recipe,
+	    title: recipe.title,
+	    description: recipe.recipe_description,
+	    cratedAt: dataFormatada   
+    });
+  } catch (err) {
+    res.status(400).send({
+      message: err.message,
+    });
+  }
+
+});
+
