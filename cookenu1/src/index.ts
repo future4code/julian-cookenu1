@@ -145,6 +145,9 @@ app.post("/recipe", async (req: Request, res: Response) => {
 
 app.post("/user/follow", async (req: Request, res: Response) => {
   try {
+    if (!req.body.userToFollowId || req.body.userToFollowId === " ") {
+      throw new Error("Insira um id");
+    }
     const token = req.headers.token as string;
     
     const authenticator = new Authenticator();
@@ -165,15 +168,19 @@ app.post("/user/follow", async (req: Request, res: Response) => {
   }
 });
 
-app.delete("/user/unfollow", async (req: Request, res: Response) => {
+app.post("/user/unfollow", async (req: Request, res: Response) => {
   try {
+    if (!req.body.userToUnfollowId || req.body.userToUnfollowId === " ") {
+      throw new Error("Insira um id");
+    }
+    
     const token = req.headers.token as string;
     
     const authenticator = new Authenticator();
     const authenticationData = authenticator.getData(token);
     const id_follower = authenticationData.id;
     const id_followed = req.body.userToUnfollowId
-    
+
     const followDb = new FollowDatabase();   
     await followDb.deleteFollow(id_followed, id_follower);
 
