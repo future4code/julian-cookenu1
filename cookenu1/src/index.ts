@@ -168,7 +168,7 @@ app.post("/user/follow", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/user/unfollow", async (req: Request, res: Response) => {
+app.delete("/user/unfollow", async (req: Request, res: Response) => {
   try {
     if (!req.body.userToUnfollowId || req.body.userToUnfollowId === " ") {
       throw new Error("Insira um id");
