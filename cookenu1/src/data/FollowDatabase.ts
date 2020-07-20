@@ -13,7 +13,8 @@ export class FollowDatabase {
   });
 
   private static TABLE_NAME = "Follow_Cookenu1";
-
+  private static COLUM_FOLLOWED_NAME = "id_followed";
+  
   public async createFollow(
     id_followed: string,
     id_follower: string
@@ -34,15 +35,24 @@ export class FollowDatabase {
     return result[0];
   }
 
+
+  public async isValidId(id: string): Promise<any> {
+    const result = await this.connection  
+      .raw(`
+        SELECT COUNT(*) as quantity FROM ${FollowDatabase.TABLE_NAME}
+        WHERE ${FollowDatabase.COLUM_FOLLOWED_NAME}="${id}"`
+      );
+    return result[0][0]
+  }
+
   public async deleteFollow(id_followed: string, id_follower: string): Promise<any> {
     try{
       await this.connection
       .delete()
       .from(FollowDatabase.TABLE_NAME)
       .where({ id_followed, id_follower });
-    }catch(er){
-      console.log(er)
-      console.log(id_followed, id_follower)
+    }catch(err){
+      throw new Error(err.sqlMessage || err.message)
     }
   }
 }
