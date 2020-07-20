@@ -17,13 +17,15 @@ export class RecipeDatabase {
   public async createRecipe(
     id_Author: string,
     title: string,
-    recipe_description: string,  
+    recipe_description: string,
+    createdAt: number  
   ): Promise<void> {
     await this.connection
       .insert({
         id_Author,
         title,
-        recipe_description    
+        recipe_description,
+        createdAt  
       })
       .into(RecipeDatabase.TABLE_NAME);
   }

@@ -7,21 +7,13 @@ import { RecipeDatabase } from "./data/RecipeDatabase";
 import { Authenticator } from "./services/Authenticator";
 import HashManager from "./services/HashManager";
 import { BaseDatabase } from "./data/BaseDatabase";
-import { title } from "process";
+import moment from "moment"
 
 
-
+moment.locale("pt-br")
 dotenv.config();
-
 const app = express();
-
 app.use(express.json());
-
-/*********************************************************************************************/
-/*********************************************************************************************/
-// CRIAR NOVO USUARIO FINALIZADO
-/*********************************************************************************************/
-/*********************************************************************************************/
 
 app.post("/signup", async (req: Request, res: Response) => {
   try {    
@@ -55,12 +47,6 @@ app.post("/signup", async (req: Request, res: Response) => {
     });
   }
 });
-
-/*********************************************************************************************/
-/*********************************************************************************************/
-// LOGIN FINALIZADO
-/*********************************************************************************************/
-/*********************************************************************************************/
 
 app.post("/login", async (req: Request, res: Response) => {
   try {
@@ -128,13 +114,6 @@ app.post("/login", async (req: Request, res: Response) => {
 //  await BaseDatabase.destroyConnection();
 //});
 
-
-/*********************************************************************************************/
-/*********************************************************************************************/
-// POSTAR RECEITA FINALIZADO
-/*********************************************************************************************/
-/*********************************************************************************************/
-
 app.post("/recipe", async (req: Request, res: Response) => {
   try {
     const token = req.headers.token as string;
@@ -142,15 +121,16 @@ app.post("/recipe", async (req: Request, res: Response) => {
     const authenticator = new Authenticator();
     const authenticationData = authenticator.getData(token);
     const id_Author = authenticationData.id;
+    const createdAt = Date.now()  
 
-    console.log(id_Author)
+    console.log(createdAt)
     const recipeData = {
       title: req.body.title,
       recipe_description: req.body.recipe_description
     };
 
     const recipeDatabase = new RecipeDatabase();   
-    await recipeDatabase.createRecipe(id_Author, recipeData.title, recipeData.recipe_description);
+    await recipeDatabase.createRecipe(id_Author, recipeData.title, recipeData.recipe_description, createdAt);
 
     res.status(200).send({
       mensagem: "Receita criada com sucesso!"
@@ -162,11 +142,6 @@ app.post("/recipe", async (req: Request, res: Response) => {
   }
 });
 
-/*********************************************************************************************/
-/*********************************************************************************************/
-// PEGAR USUARIO PELO TOKEN FINALIZADO
-/*********************************************************************************************/
-/*********************************************************************************************/
 app.get("/user/profile", async (req: Request, res: Response) => {
   try {
     const token = req.headers.token as string;
@@ -192,12 +167,6 @@ app.get("/user/profile", async (req: Request, res: Response) => {
     });
   }
 });
-
-/*********************************************************************************************/
-/*********************************************************************************************/
-// PEGAR USUARIO PELO ID FINALIZADO
-/*********************************************************************************************/
-/*********************************************************************************************/
 
 app.get("/user/:id", async (req: Request, res: Response) => {
   try {
@@ -234,13 +203,6 @@ const server = app.listen(process.env.PORT || 3000, () => {
   }
 });
 
-
-/*********************************************************************************************/
-/*********************************************************************************************/
-// PEGAR RECEITA PELO ID 
-/*********************************************************************************************/
-/*********************************************************************************************/
-
 app.get("/recipe/:id", async (req: Request, res: Response) => {
   try {
     const token = req.headers.token as string;
@@ -253,8 +215,13 @@ app.get("/recipe/:id", async (req: Request, res: Response) => {
     const recipeDatabase = new RecipeDatabase();
     const recipe = await recipeDatabase.getRecipeById(id);
 
+    const dataFormatada = moment(recipe.createdAt).format("DD/MM/YYYY HH:mm")
+    
     res.status(200).send({
-      recipe    
+      id: recipe.id_Recipe,
+	    title: recipe.title,
+	    description: recipe.recipe_description,
+	    cratedAt: dataFormatada   
     });
   } catch (err) {
     res.status(400).send({
