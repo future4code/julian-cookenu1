@@ -131,7 +131,7 @@ app.post("/login", async (req: Request, res: Response) => {
 
 /*********************************************************************************************/
 /*********************************************************************************************/
-// POSTAR RECEITA EM ANDAMENTO
+// POSTAR RECEITA FINALIZADO
 /*********************************************************************************************/
 /*********************************************************************************************/
 
@@ -233,3 +233,34 @@ const server = app.listen(process.env.PORT || 3000, () => {
     console.error(`Failure upon starting server.`);
   }
 });
+
+
+/*********************************************************************************************/
+/*********************************************************************************************/
+// PEGAR RECEITA PELO ID 
+/*********************************************************************************************/
+/*********************************************************************************************/
+
+app.get("/recipe/:id", async (req: Request, res: Response) => {
+  try {
+    const token = req.headers.token as string;
+
+    const authenticator = new Authenticator();
+    authenticator.getData(token);
+		
+    const id = Number(req.params.id);
+
+    const recipeDatabase = new RecipeDatabase();
+    const recipe = await recipeDatabase.getRecipeById(id);
+
+    res.status(200).send({
+      recipe    
+    });
+  } catch (err) {
+    res.status(400).send({
+      message: err.message,
+    });
+  }
+
+});
+

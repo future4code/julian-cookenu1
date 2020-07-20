@@ -29,11 +29,16 @@ export class RecipeDatabase {
   }
 
   public async getRecipeById(id_Recipe: number): Promise<any> {
-    const result = await this.connection
+    try{
+      const result = await this.connection
       .select("*")
       .from(RecipeDatabase.TABLE_NAME)
-      .where({ id_Recipe });    
+      .where({ id_Recipe });  
+      console.log(result)  
     return result[0];
+    }catch(er){
+      console.log(er)
+    }
   }
 
 }
