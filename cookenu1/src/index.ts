@@ -156,7 +156,7 @@ app.post("/user/follow", async (req: Request, res: Response) => {
     const id_followed = req.body.userToFollowId
 
     const followId = new FollowDatabase();
-    const idDb = await followId.isValidId(id_followed);
+    const idDb = await followId.isValidIdFollow(id_followed);
 
     if (idDb.quantity === 0) {
       throw new Error("Insira um id válido");
@@ -189,7 +189,7 @@ app.delete("/user/unfollow", async (req: Request, res: Response) => {
     const id_followed = req.body.userToUnfollowId
 
     const followId = new FollowDatabase();
-    const idDb = await followId.isValidId(id_followed);
+    const idDb = await followId.isValidIdUnfollow(id_followed);
     
     if (idDb.quantity === 0) {
       throw new Error("Insira um id válido");
